@@ -1,0 +1,16 @@
+# Raw downloaded MISO data
+market-evaluation/data/raw/
+market-rnd/data/raw/
+
+# Large downloaded archives
+*.zip
+
+# R / RStudio temporary files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Temporary files
+*.tmp
+~$*
