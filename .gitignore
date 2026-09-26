@@ -17,3 +17,9 @@ market-rnd/data/raw/
 
 # Local processed R objects
 market-evaluation/data/processed/*.rds
+
+# Python temporary files
+__pycache__/
+*.py[cod]
+.venv/
+venv/

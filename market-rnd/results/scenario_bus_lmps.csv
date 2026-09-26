@@ -1,0 +1,11 @@
+Scenario,Bus,LoadMW,LMP
+Baseline,1,40.0,35.0
+Baseline,2,55.0,35.0
+Baseline,3,70.0,35.0
+Baseline,4,65.0,35.0
+Baseline,5,50.0,35.0
+L24 Limit = 50 MW,1,40.0,32.1875
+L24 Limit = 50 MW,2,55.0,29.84375
+L24 Limit = 50 MW,3,70.0,35.0
+L24 Limit = 50 MW,4,65.0,50.0
+L24 Limit = 50 MW,5,50.0,42.5

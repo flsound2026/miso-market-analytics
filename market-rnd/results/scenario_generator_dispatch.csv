@@ -1,0 +1,11 @@
+Scenario,Generator,Bus,MarginalCost,Pmax,DispatchMW
+Baseline,G1,1,18.0,120.0,120.0
+Baseline,G2,2,22.0,100.0,100.0
+Baseline,G3,3,35.0,80.0,60.00000000000003
+Baseline,G4,4,50.0,70.0,0.0
+Baseline,G5,5,65.0,60.0,0.0
+L24 Limit = 50 MW,G1,1,18.0,120.0,120.0
+L24 Limit = 50 MW,G2,2,22.0,100.0,100.0
+L24 Limit = 50 MW,G3,3,35.0,80.0,44.21875
+L24 Limit = 50 MW,G4,4,50.0,70.0,15.78125
+L24 Limit = 50 MW,G5,5,65.0,60.0,0.0

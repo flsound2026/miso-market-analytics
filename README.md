@@ -22,11 +22,17 @@ The current case study examines an extreme pricing event on September 1, 2026, w
 
 ### 2. Energy Markets R&D
 
-`market-rnd/`
+[View the Energy Market R&D Case Study](market-rnd/README.md)
 
-Under development.
+A synthetic DC optimal power flow study examining:
 
-This project will focus on optimization-based electricity-market modeling, including economic dispatch and market-price sensitivity analysis.
+- least-cost generation dispatch;
+- transmission congestion and redispatch;
+- nodal locational marginal prices;
+- transmission-capacity sensitivity; and
+- dual/shadow-price interpretation.
+
+The project connects binding transmission constraints with production cost, locational price separation, and the marginal economic value of transmission capacity.
 
 ## Tools
 
