@@ -192,3 +192,62 @@ using the following filenames:
 The analysis scripts expect these filenames and this directory structure.
 
 The September 25 historical load report contains observations for earlier market dates, including September 1. The analysis matches observations using the `MarketDay` field rather than the report publication date.
+
+---
+
+## Data Quality Checks
+
+The historical load file was checked for completeness and duplicate observations.
+
+For each included market date, the data contain 24 hourly observations for each load-resource-zone category, with no duplicate combinations of:
+
+```text
+MarketDay × HourEnding × LoadResourceZone
+```
+
+Three calendar dates are absent from the historical source file:
+
+```text
+2026-04-20
+2026-08-17
+2026-08-18
+```
+
+These missing dates do not affect the September 1 case study.
+
+---
+
+## Reproducing the Analysis
+
+Required R packages:
+
+```r
+install.packages(c("tidyverse", "readxl"))
+```
+
+After placing the raw MISO files in:
+
+```text
+market-evaluation/data/raw/
+```
+
+run the scripts from the repository root in order:
+
+```r
+source("market-evaluation/R/01_prepare_data.R")
+source("market-evaluation/R/02_he19_event_analysis.R")
+```
+
+The first script cleans and validates the source data. The second performs the event analysis, creates the figures, and exports the processed summary tables.
+
+---
+
+## Interpretation and Limitations
+
+This case study identifies the price-component structure of the September 1 HE19 event.
+
+The results show that a large common MEC increase occurred, while congestion and losses produced substantially different regional LMP outcomes. The event did not coincide with the day's system-load peak, and the system-wide load forecast error was not unusually large.
+
+The analysis does **not** establish the operational cause of the event.
+
+Additional information on generation availability, outages, reserves, interchange, transmission constraints, and other system conditions would be required for causal attribution.
