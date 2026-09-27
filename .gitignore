@@ -23,3 +23,7 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Market-evaluation run logs / QA artifacts
+market-evaluation/data/processed/history_download_log_*.csv
+market-evaluation/data/processed/history_missing_observations_*.csv

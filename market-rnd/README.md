@@ -1,5 +1,4 @@
 # Energy Market R&D Case Study
-
 ## DC Optimal Power Flow, Transmission Congestion, and Locational Marginal Pricing
 
 This project develops a synthetic electricity-market clearing model using DC optimal power flow (DC-OPF).
@@ -188,14 +187,10 @@ This dual result can be verified directly using the change in optimal production
 
 For example:
 
-\[
-\frac{
-6696.72 - 6539.69
-}{
-55 - 50
-}
+$$
+\frac{6696.72 - 6539.69}{55 - 50}
 \approx 31.41
-\]
+$$
 
 Therefore, within this operating regime, increasing L24 capacity by 1 MW reduces optimal production cost by approximately:
 
@@ -209,50 +204,50 @@ The agreement between the optimization dual and the finite-difference calculatio
 
 The objective is to minimize total variable generation cost:
 
-\[
+$$
 \min \sum_g c_g P_g
-\]
+$$
 
 subject to:
 
 ### Generator limits
 
-\[
-0 \leq P_g \leq P_g^{max}
-\]
+$$
+0 \leq P_g \leq P_g^{\max}
+$$
 
 ### DC transmission flow
 
-\[
+$$
 F_{ij}
 =
-\frac{BaseMVA}{x_{ij}}
+\frac{\text{BaseMVA}}{x_{ij}}
 (\theta_i-\theta_j)
-\]
+$$
 
 ### Transmission capacity
 
-\[
+$$
 -\bar{F}_{ij}
 \leq
 F_{ij}
 \leq
 \bar{F}_{ij}
-\]
+$$
 
 ### Nodal power balance
 
 At every bus:
 
-\[
-Generation
+$$
+\text{Generation}
 -
-Load
+\text{Load}
 -
-Net\ Export
+\text{Net Export}
 =
 0
-\]
+$$
 
 One bus angle is fixed as the reference angle.
 

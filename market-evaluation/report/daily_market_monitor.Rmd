@@ -1,0 +1,261 @@
+---
+title: "MISO DA-RT Market Monitoring Report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+params:
+  market_date: "2026-09-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(tidyverse)
+
+market_date <- as.Date(params$market_date)
+
+# Locale-independent English date label.
+display_date <- sprintf(
+  "%s %d, %d",
+  month.name[as.integer(format(market_date, "%m"))],
+  as.integer(format(market_date, "%d")),
+  as.integer(format(market_date, "%Y"))
+)
+
+processed_dir <- "market-evaluation/data/processed"
+
+alerts <- read_csv(
+  file.path(
+    processed_dir,
+    paste0(
+      "automated_lmp_alerts_",
+      format(market_date, "%Y%m%d"),
+      ".csv"
+    )
+  ),
+  show_col_types = FALSE
+)
+
+primary_alerts <- alerts %>%
+  filter(Alert_Primary)
+
+alert_count <- nrow(primary_alerts)
+```
+
+# Monitoring Summary
+
+**Market Date:** `r display_date`
+
+```{r alert-banner, results='asis'}
+if (alert_count > 0) {
+  cat(
+    paste0(
+      '<div style="background-color:#ffe5e5;border:2px solid #b30000;',
+      'padding:14px 16px;margin:15px 0;font-size:18px;font-weight:bold;">',
+      'ALERT: ', alert_count, ' hub-hour DA-RT divergence alert',
+      ifelse(alert_count == 1, '', 's'),
+      ' detected.</div>'
+    )
+  )
+} else {
+  cat(
+    paste0(
+      '<div style="background-color:#e7f6e7;border:2px solid #2e7d32;',
+      'padding:14px 16px;margin:15px 0;font-size:18px;font-weight:bold;">',
+      'No primary DA-RT divergence alerts detected.</div>'
+    )
+  )
+}
+```
+
+The monitoring rule flags a hub-hour when the absolute Real-Time minus Day-Ahead LMP spread exceeds that hub's historical 99th percentile.
+
+The historical baseline uses **July 1-August 31, 2026**, excluding the monitored day.
+
+# Primary Alerts
+
+```{r primary-alert-table}
+primary_alerts %>%
+  transmute(
+    `Hour Ending` = HourEnding,
+    Hub = Node,
+    `DA LMP (USD/MWh)` = round(DA_Value, 2),
+    `RT LMP (USD/MWh)` = round(RT_Value, 2),
+    `RT - DA (USD/MWh)` = round(Spread, 2),
+    `Historical P99 (USD/MWh)` = round(HubP99, 2)
+  ) %>%
+  knitr::kable(
+    format = "html",
+    align = c("r", "l", "r", "r", "r", "r"),
+    escape = TRUE
+  )
+```
+
+# DA-RT Spread by Hub and Hour
+
+```{r heatmap, fig.width=10, fig.height=5}
+max_abs_spread <- max(abs(alerts$Spread), na.rm = TRUE)
+
+ggplot(
+  alerts,
+  aes(
+    x = HourEnding,
+    y = factor(Node, levels = rev(unique(Node))),
+    fill = Spread
+  )
+) +
+  geom_tile() +
+  scale_x_continuous(
+    breaks = 1:24
+  ) +
+  scale_fill_gradient2(
+  midpoint = 0,
+  limits = c(-max_abs_spread, max_abs_spread)
+) +
+  labs(
+    x = "Hour Ending",
+    y = NULL,
+    fill = "RT - DA\nUSD/MWh",
+    title = paste(
+      "DA-RT LMP Spread:",
+      display_date
+    )
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(size = 8)
+  )
+```
+
+# Largest Absolute Spreads
+
+```{r top-spreads}
+alerts %>%
+  arrange(desc(AbsSpread)) %>%
+  slice_head(n = 10) %>%
+  transmute(
+    `Hour Ending` = HourEnding,
+    Hub = Node,
+    `DA LMP` = round(DA_Value, 2),
+    `RT LMP` = round(RT_Value, 2),
+    `RT - DA` = round(Spread, 2),
+    `Historical P99` = round(HubP99, 2),
+    Alert = if_else(
+      Alert_Primary,
+      "YES",
+      ""
+    )
+  ) %>%
+  knitr::kable(
+    format = "html",
+    align = c("r", "l", "r", "r", "r", "r", "c"),
+    escape = TRUE
+  )
+```
+
+# Historical Context
+
+```{r historical-context}
+alerts %>%
+  distinct(
+    Node,
+    HubP99
+  ) %>%
+  arrange(desc(HubP99)) %>%
+  transmute(
+    Hub = Node,
+    `Historical P99 |RT - DA| (USD/MWh)` =
+      round(HubP99, 2)
+  ) %>%
+  knitr::kable(
+    format = "html",
+    align = c("l", "r"),
+    escape = TRUE
+  )
+```
+
+# Robust Diagnostic
+
+In addition to the primary empirical-percentile alert, the workflow calculates a robust deviation measure using the historical median and median absolute deviation (MAD) for each hub and hour.
+
+This diagnostic is retained for context but is **not used as the primary alert trigger**.
+
+```{r robust-diagnostic}
+alerts %>%
+  filter(Alert_Robust) %>%
+  arrange(desc(RobustZ)) %>%
+  transmute(
+    `Hour Ending` = HourEnding,
+    Hub = Node,
+    `RT - DA` = round(Spread, 2),
+    `Historical Median` = round(HistoricalMedian, 2),
+    `Robust Z` = round(RobustZ, 2),
+    `Primary Alert` = if_else(
+      Alert_Primary,
+      "YES",
+      ""
+    )
+  ) %>%
+  knitr::kable(
+    format = "html",
+    align = c("r", "l", "r", "r", "r", "c"),
+    escape = TRUE
+  )
+```
+
+# Interpretation
+
+```{r interpretation, results='asis'}
+if (alert_count > 0) {
+
+  peak_alert_hour <- primary_alerts %>%
+    count(HourEnding) %>%
+    arrange(desc(n)) %>%
+    slice(1) %>%
+    pull(HourEnding)
+
+  max_alert <- primary_alerts %>%
+    arrange(desc(AbsSpread)) %>%
+    slice(1)
+
+  cat(
+    paste0(
+      "The automated historical-baseline rule identified ",
+      alert_count,
+      " unusually large DA-RT hub-hour divergences. ",
+      "The alerts were concentrated at HE",
+      peak_alert_hour,
+      ". The largest deviation occurred at ",
+      max_alert$Node,
+      ", where Real-Time LMP exceeded Day-Ahead LMP by approximately ",
+      round(max_alert$Spread, 0),
+      " USD/MWh."
+    )
+  )
+
+} else {
+
+  cat(
+    "No hub-hour exceeded its historical 99th-percentile absolute DA-RT spread threshold."
+  )
+}
+```
+
+# Methodology
+
+The workflow:
+
+1. Downloads and caches historical MISO Day-Ahead ExPost and Real-Time Final LMP reports.
+2. Builds a 62-day historical baseline for eight named hubs.
+3. Calculates hub-specific empirical 99th-percentile absolute DA-RT spread thresholds.
+4. Evaluates the selected market day against those thresholds.
+5. Generates automated alert tables, visualizations, and diagnostic statistics.
+
+The alert identifies unusually large price divergence relative to recent historical behavior. It does not, by itself, establish the cause of the divergence.
