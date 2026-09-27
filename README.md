@@ -44,6 +44,8 @@ The project connects binding transmission constraints with production cost, loca
 
 ## Data
 
-All analyses use publicly available MISO market data.
+The Market Evaluation case study uses publicly available MISO market data.
 
-Large raw source files are excluded from version control. Reproducible scripts and compact processed analytical outputs are retained in the repository.
+The Energy Markets R&D case study uses a synthetic five-bus system designed to demonstrate market-clearing optimization, transmission congestion, LMP formation, and dual sensitivity analysis.
+
+Large raw source files are excluded from version control. Reproducible scripts and compact analytical outputs are retained in the repository.
